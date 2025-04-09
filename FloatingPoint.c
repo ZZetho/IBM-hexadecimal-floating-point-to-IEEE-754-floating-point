@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdbool.h>
 
 typedef struct
 {
@@ -37,21 +38,22 @@ IEEEDouble;
 
 int main(int argc, char * argv[])
 {
-    FILE * inputFile;
-    FILE * outputFile;
+    char * inputFilename = "input.txt";
+    char * outputFilename = "output.txt";
 
-    char inputFilename[1024];
-    char outputFilename[1024];
+    FILE * inputFile = fopen(inputFilename, "rb");
+    FILE * outputFile = fopen(outputFilename, "wb");
 
     char inputPrecisionChar;
     char outputPrecisionChar;
 
-    uint8_t inputPrecision;
-    uint8_t outputPrecision;
-
     const uint8_t SINGLE = 1;
     const uint8_t DOUBLE = 2;
 
+    uint8_t inputPrecision = SINGLE;
+    uint8_t outputPrecision = SINGLE;
+
+    /*
     // get the input filename from the user and its precision
     printf("Enter input filename: ");
     if (fscanf(stdin, " %1023[^\n]", inputFilename) != 1)
@@ -123,6 +125,7 @@ int main(int argc, char * argv[])
         return 1;
     }
     //printf("opened: %s\n", outputFilename);
+     */
 
     if (inputPrecision == DOUBLE && outputPrecision == DOUBLE)
     {
@@ -141,9 +144,8 @@ int main(int argc, char * argv[])
     else if (inputPrecision == SINGLE && outputPrecision == SINGLE)
     {
         uint8_t inputBuffer[4];
-        uint8_t outputBuffer[4];
 
-        // read each line into the input buffer
+        // read four bytes into the buffer
         while (fread(inputBuffer, sizeof(uint8_t) * 4, 1, inputFile) == 1)
         {
             // input buffer stores bytes in reverse order
@@ -151,10 +153,23 @@ int main(int argc, char * argv[])
             //IBMSingle input;
             //input.sign = ((inputBuffer & 0x80) >> 7);
 
-            //printf("%x", input.sign);
+            uint8_t sign = (inputBuffer[0] & 0x80) >> 7;
+            uint8_t exponent = ((inputBuffer[0] & 0x7F) - 64);
+            uint32_t factor = ((inputBuffer[1] << 16) | (inputBuffer[2] << 8) | inputBuffer[3]) + 1;
+
+            printf("factor: %x\n", factor);
+            printf("exponent: %x\n", exponent);
+            printf("sign: %x\n", sign);
+
+            uint32_t ibm = 0;
+            ibm = ibm | ((uint32_t)sign << 31);
+            ibm = ibm | ((uint32_t)exponent << 23);
+            ibm = ibm | ((uint32_t)factor >> 1);
+
+            printf("output: %x\n", ibm);
 
             // write to the output file
-            fwrite(outputBuffer, sizeof(uint8_t) * 4, 1, outputFile);
+            fwrite(&ibm, sizeof(uint32_t), 1, outputFile);
         }
     }
 
