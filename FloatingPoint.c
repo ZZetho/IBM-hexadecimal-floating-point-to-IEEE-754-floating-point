@@ -1,11 +1,44 @@
 #include <stdio.h>
 #include <stdint.h>
-#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+typedef struct
+{
+    uint8_t sign : 1;
+    uint8_t exponent : 7;
+    uint32_t fraction : 24;
+}
+IBMSingle;
+
+typedef struct
+{
+    uint8_t sign : 1;
+    uint8_t exponent : 7;
+    uint64_t fraction : 56;
+}
+IBMDouble;
+
+typedef struct
+{
+    uint8_t sign : 1;
+    uint8_t exponent : 8;
+    uint32_t fraction : 23;
+}
+IEEESingle;
+
+typedef struct
+{
+    uint8_t sign : 1;
+    uint16_t exponent : 11;
+    uint64_t fraction : 52;
+}
+IEEEDouble;
 
 int main(int argc, char * argv[])
 {
-    FILE * input;
-    FILE * output;
+    FILE * inputFile;
+    FILE * outputFile;
 
     char inputFilename[1024];
     char outputFilename[1024];
@@ -48,7 +81,7 @@ int main(int argc, char * argv[])
     }
 
     // open the input file
-    if ((input = fopen(inputFilename, "r")) == NULL)
+    if ((inputFile = fopen(inputFilename, "rb")) == NULL)
     {
         printf("Failed to open: %s\n", inputFilename);
         return 1;
@@ -84,48 +117,49 @@ int main(int argc, char * argv[])
     }
 
     // open the output file
-    if ((output = fopen(outputFilename, "w")) == NULL)
+    if ((outputFile = fopen(outputFilename, "wb")) == NULL)
     {
         printf("Failed to open: %s\n", outputFilename);
         return 1;
     }
     //printf("opened: %s\n", outputFilename);
 
-    char inputBuffer[1024];
-    char outputBuffer[1024];
-
-    // read each line into the input buffer
-    while (fgets(inputBuffer, 1024, input) != NULL)
+    if (inputPrecision == DOUBLE && outputPrecision == DOUBLE)
     {
-        // TODO: convert from IBM to IEEE
 
-        if (inputPrecision == DOUBLE && outputPrecision == DOUBLE)
-        {
-            // input double
-            // output double
-        }
-        else if (inputPrecision == DOUBLE && outputPrecision == SINGLE)
-        {
-            // input double
-            // output single
-        }
-        else if (inputPrecision == SINGLE && outputPrecision == DOUBLE)
-        {
-            // input single
-            // output single
-        }
-        else if (inputPrecision == SINGLE && outputPrecision == SINGLE)
-        {
-            // input single
-            // output single
-        }
+    }
+    else if (inputPrecision == DOUBLE && outputPrecision == SINGLE)
+    {
+        // input double
+        // output single
+    }
+    else if (inputPrecision == SINGLE && outputPrecision == DOUBLE)
+    {
+        // input single
+        // output single
+    }
+    else if (inputPrecision == SINGLE && outputPrecision == SINGLE)
+    {
+        uint8_t inputBuffer[4];
+        uint8_t outputBuffer[4];
 
-        // write to the output file
-        fprintf(output ,"%s", outputBuffer);
+        // read each line into the input buffer
+        while (fread(inputBuffer, sizeof(uint8_t) * 4, 1, inputFile) == 1)
+        {
+            // input buffer stores bytes in reverse order
+
+            //IBMSingle input;
+            //input.sign = ((inputBuffer & 0x80) >> 7);
+
+            //printf("%x", input.sign);
+
+            // write to the output file
+            fwrite(outputBuffer, sizeof(uint8_t) * 4, 1, outputFile);
+        }
     }
 
-    fclose(input);
-    fclose(output);
+    fclose(inputFile);
+    fclose(outputFile);
 
     return 0;
 }
