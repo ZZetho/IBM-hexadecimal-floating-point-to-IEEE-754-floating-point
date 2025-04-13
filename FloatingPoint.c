@@ -154,22 +154,39 @@ int main(int argc, char * argv[])
             //input.sign = ((inputBuffer & 0x80) >> 7);
 
             uint8_t sign = (inputBuffer[0] & 0x80) >> 7;
-            uint8_t exponent = ((inputBuffer[0] & 0x7F) - 64);
-            uint32_t factor = ((inputBuffer[1] << 16) | (inputBuffer[2] << 8) | inputBuffer[3]) + 1;
+            uint8_t exponent = (inputBuffer[0] & 0x7F);
+            uint32_t fraction = (inputBuffer[1] << 16) | (inputBuffer[2] << 8) | inputBuffer[3];
 
-            printf("factor: %x\n", factor);
-            printf("exponent: %x\n", exponent);
+            printf("fraction: %x\n", fraction);
+            printf("exponent: %d\n", exponent);
             printf("sign: %x\n", sign);
 
-            uint32_t ibm = 0;
-            ibm = ibm | ((uint32_t)sign << 31);
-            ibm = ibm | ((uint32_t)exponent << 23);
-            ibm = ibm | ((uint32_t)factor >> 1);
+            // the number of bits that the fraction will be moved left by; ie: the index of the floating point
+            uint16_t pointIndex = (exponent - 64) * 4;
 
-            printf("output: %x\n", ibm);
+            // find the index of the first 1 in the fraction
+            int oneIndex;
+            for (oneIndex = 0; oneIndex < 33; oneIndex ++)
+            {
+                if (oneIndex == 32)
+                {
+                    // TODO no ones found, = 0
+                    break;
+                }
+                if (fraction >> oneIndex == 1)
+                {
+                    oneIndex = (32 - oneIndex) - 9;
+                    break;
+                }
+            }
+
+            // point index is the new exponent
+            pointIndex = pointIndex - oneIndex - 1;
+
+            printf("%d\n", pointIndex);
 
             // write to the output file
-            fwrite(&ibm, sizeof(uint32_t), 1, outputFile);
+            //fwrite(&ibm, sizeof(uint32_t), 1, outputFile);
         }
     }
 
