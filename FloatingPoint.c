@@ -1,40 +1,5 @@
 #include <stdio.h>
 #include <stdint.h>
-#include <stdlib.h>
-#include <math.h>
-#include <stdbool.h>
-
-typedef struct
-{
-    uint8_t sign : 1;
-    uint8_t exponent : 7;
-    uint32_t fraction : 24;
-}
-IBMSingle;
-
-typedef struct
-{
-    uint8_t sign : 1;
-    uint8_t exponent : 7;
-    uint64_t fraction : 56;
-}
-IBMDouble;
-
-typedef struct
-{
-    uint8_t sign : 1;
-    uint8_t exponent : 8;
-    uint32_t fraction : 23;
-}
-IEEESingle;
-
-typedef struct
-{
-    uint8_t sign : 1;
-    uint16_t exponent : 11;
-    uint64_t fraction : 52;
-}
-IEEEDouble;
 
 int main(int argc, char * argv[])
 {
@@ -157,9 +122,9 @@ int main(int argc, char * argv[])
             uint8_t exponent = (inputBuffer[0] & 0x7F);
             uint32_t fraction = (inputBuffer[1] << 16) | (inputBuffer[2] << 8) | inputBuffer[3];
 
-            printf("fraction: %x\n", fraction);
-            printf("exponent: %d\n", exponent);
-            printf("sign: %x\n", sign);
+            //printf("fraction: %x\n", fraction);
+            //printf("exponent: %d\n", exponent);
+            //printf("sign: %x\n", sign);
 
             // the number of bits that the fraction will be moved left by; ie: the index of the floating point
             uint16_t pointIndex = (exponent - 64) * 4;
@@ -175,18 +140,34 @@ int main(int argc, char * argv[])
                 }
                 if (fraction >> oneIndex == 1)
                 {
-                    oneIndex = (32 - oneIndex) - 9;
+                    oneIndex = (32 - oneIndex) - 8;
                     break;
                 }
             }
 
-            // point index is the new exponent
-            pointIndex = pointIndex - oneIndex - 1;
+            // move the fraction left by oneIndex for the implicit 1 of IEEE
+            fraction = (fraction << oneIndex) & 0xFFFFFF;
 
-            printf("%d\n", pointIndex);
+            // new exponent, IEEE is biased by 127 bits
+            pointIndex = pointIndex - oneIndex + 127;
 
-            // write to the output file
-            //fwrite(&ibm, sizeof(uint32_t), 1, outputFile);
+            //printf("%d\n", pointIndex);
+            //printf("%x\n", fraction);
+
+            uint32_t output = 0;
+            output = output | ((uint32_t)sign << 31);
+            output = output | ((uint32_t)pointIndex << 23);
+            output = output | fraction >> 1;
+
+            //printf("output: %x\n", output);
+
+            // write the bytes of output to the output file in the correct order
+            for (int byteIndex = sizeof(output) - 1; byteIndex >= 0; byteIndex --)
+            {
+                printf("e\n");
+                // i <3 pointers
+                fwrite(&((uint8_t*)&output)[byteIndex], 1, 1, outputFile);
+            }
         }
     }
 
