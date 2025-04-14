@@ -17,8 +17,8 @@
 
 int main(int argc, char * argv[])
 {
-    char * inputFilename;
-    char * outputFilename;
+    char inputFilename[1024];
+    char outputFilename[1024];
 
     FILE * inputFile;
     FILE * outputFile;
