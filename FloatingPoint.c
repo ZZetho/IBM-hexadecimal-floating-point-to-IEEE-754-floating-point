@@ -1,27 +1,27 @@
 #include <stdio.h>
 #include <stdint.h>
 
-//void printIEEEsingle(uint32_t ieeeSingle)
-//{
-//    float * out = &ieeeSingle;
-//
-//    printf("%.8f\n", *out);
-//}
-//
-//void printIEEEdouble(uint64_t ieeeDouble)
-//{
-//    double * out = &ieeeDouble;
-//
-//    printf("%.16lf\n", *out);
-//}
+void printIEEEsingle(uint32_t ieeeSingle)
+{
+    float * out = &ieeeSingle;
+
+    printf("%.8f\n", *out);
+}
+
+void printIEEEdouble(uint64_t ieeeDouble)
+{
+    double * out = &ieeeDouble;
+
+    printf("%.16lf\n", *out);
+}
 
 int main(int argc, char * argv[])
 {
     char inputFilename[1024];
     char outputFilename[1024];
 
-    FILE * inputFile;
-    FILE * outputFile;
+    FILE * inputFile = fopen("input.txt", "rb");
+    FILE * outputFile = fopen("output.txt", "wb");
 
     char inputPrecisionChar;
     char outputPrecisionChar;
@@ -29,10 +29,10 @@ int main(int argc, char * argv[])
     const uint8_t SINGLE = 1;
     const uint8_t DOUBLE = 2;
 
-    uint8_t inputPrecision;
-    uint8_t outputPrecision;
+    uint8_t inputPrecision = SINGLE;
+    uint8_t outputPrecision = SINGLE;
 
-
+    /*
     // get the input filename from the user and its precision
     printf("Enter input filename: ");
     if (fscanf(stdin, " %1023[^\n]", inputFilename) != 1)
@@ -104,7 +104,7 @@ int main(int argc, char * argv[])
         return 1;
     }
     //printf("opened: %s\n", outputFilename);
-
+    */
 
     if (inputPrecision == DOUBLE && outputPrecision == DOUBLE)
     {
@@ -286,8 +286,11 @@ int main(int argc, char * argv[])
         // read four bytes into the buffer
         while (fread(inputBuffer, sizeof(uint8_t) * 4, 1, inputFile) == 1)
         {
+            // 1 bit
             uint8_t sign = (inputBuffer[0] & 0x80) >> 7;
+            // 7 bits
             uint8_t IBMexponent = (inputBuffer[0] & 0x7F);
+            // 24 bits
             uint32_t fraction = (inputBuffer[1] << 16) | (inputBuffer[2] << 8) | inputBuffer[3];
 
             //printf("fraction: %x\n", fraction);
@@ -295,38 +298,82 @@ int main(int argc, char * argv[])
             //printf("sign: %x\n", sign);
 
             // find the index of the first 1 in the fraction
+            // this is used to posistion the fraction so that its first one is removed, as per ieee implicit one
             uint16_t oneIndex;
             for (oneIndex = 0; oneIndex < 33; oneIndex ++)
             {
                 if (oneIndex == 32)
                 {
-                    // TODO no ones found, = 0
+                    // TODO: no ones found, this is a zero
                     break;
                 }
+                // shift the fraction right until it's only a single 1
                 if (fraction >> oneIndex == 1)
                 {
+                    // set oneindex to be relative to the 24 bits of the fraction, not the whole number
                     oneIndex = (32 - oneIndex) - 8;
                     break;
                 }
             }
 
+            printf("one index: %d\n", oneIndex);
+            printf("ibm exponent: %d\n", IBMexponent);
+
             // move the fraction left by oneIndex for the implicit 1 of IEEE
-            fraction = (fraction << oneIndex) & 0xFFFFFF;
+            // and & it with 24 bits of 1 to remove the implicit one
+            // move it right one as ieee has a fraction with a length of 23 bits
+            fraction = ((fraction << oneIndex) & 0xFFFFFF) >> 1;
 
             // new exponent (number of bits the fraction should be moved)
             // the number of bits IBM would move the fraction
             // minus the index of the first 1, which moves the fraction left and cuts off the first one, for IEEE's implicit one
             // IEEE single is biased by 127
-            uint16_t IEEEexponent = ((IBMexponent - 64) * 4) - oneIndex + 127;
+            int32_t IEEEexponent = ((IBMexponent - 64) * 4) - oneIndex + 127;
+
+            // if the ieee exponent is larger than its max allowed value, infinity, set fraction to zero
+            // if the ieee exponent is less than zero, try to do subnormals, fraction != zero
+            // if it's too small to do subnormals, zero, fraction = zero
 
             uint32_t output = 0;
-            output = output | ((uint32_t)sign << 31);
-            output = output | ((uint32_t)IEEEexponent << 23);
-            output = output | fraction >> 1;
+
+            printf("ieee exponent: %d\n", IEEEexponent);
+
+            // largest possible IEEE exponent for a normal value is 11111110 (254)
+            if (IEEEexponent > 0xFE)
+            {
+                printf("infinity\n");
+                output = output | ((uint32_t)sign << 31);
+
+                // (sign)1111111100000000000000000000000 is +/- infinity
+                output = output | 0x7F800000;
+            }
+            // smallest possible IEEE exponent for a normal value is 1
+            else if (IEEEexponent < 0x1)
+            {
+                // move the fraction by number of bits the exponent would move it, plus one as the fraction now contains the implicit one, then create the number
+                IEEEexponent = (-1 * IEEEexponent) + 1;
+
+                printf("moving by: %d\n", IEEEexponent);
+
+                // re-add the implicit 1 to the front of the fraction
+                fraction = fraction | 0x800000;
+                fraction = fraction >> IEEEexponent;
+
+                // construct the output, exponent = 0
+                output = output | ((uint32_t)sign << 31);
+                output = output | fraction;
+                printf("output: %x\n", output);
+            }
+            else
+            {
+                output = output | ((uint32_t)sign << 31);
+                output = output | ((uint32_t)IEEEexponent << 23);
+                output = output | fraction;
+            }
 
             //printf("output: %x\n", output);
 
-            //printIEEEsingle(output);
+            printIEEEsingle(output);
 
             // write the bytes of output to the output file in the correct order
             for (int byteIndex = sizeof(output) - 1; byteIndex >= 0; byteIndex --)
