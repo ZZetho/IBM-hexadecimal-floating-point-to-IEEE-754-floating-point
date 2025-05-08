@@ -44,7 +44,7 @@ int main(int argc, char * argv[])
     }
     // get the precision of the input file from the user
     printf("Enter input precision, (S for single, D for double): ");
-    if (fscanf(stdin, " %1[^\n]", &inputPrecisionChar) != 1)
+    if (fscanf(stdin, " %c", &inputPrecisionChar) != 1)
     {
         printf("No precision given\n");
         return 0;
@@ -80,7 +80,7 @@ int main(int argc, char * argv[])
     }
     // get the precision of the output file from the user
     printf("Enter output precision, (S for single, D for double): ");
-    if (fscanf(stdin, " %1[^\n]", &outputPrecisionChar) != 1)
+    if (fscanf(stdin, " %1c", &outputPrecisionChar) != 1)
     {
         printf("No precision given\n");
         return 0;
