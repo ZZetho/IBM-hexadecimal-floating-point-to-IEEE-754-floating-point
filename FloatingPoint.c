@@ -181,7 +181,7 @@ int main(int argc, char * argv[])
             //printIEEEdouble(output);
 
             // write the bytes of output to the output file in the correct order
-            for (int byteIndex = sizeof(output) - 1; byteIndex >= 0; byteIndex--)
+            for (int byteIndex = 0; byteIndex < sizeof(output); byteIndex++)
             {
                 // i <3 pointers
                 fwrite(&((uint8_t *) &output)[byteIndex], 1, 1, outputFile);
@@ -268,7 +268,7 @@ int main(int argc, char * argv[])
             //printIEEEsingle(output);
 
             // write the bytes of output to the output file in the correct order
-            for (int byteIndex = sizeof(output) - 1; byteIndex >= 0; byteIndex--)
+            for (int byteIndex = 0; byteIndex < sizeof(output); byteIndex++)
             {
                 // i <3 pointers
                 fwrite(&((uint8_t *) &output)[byteIndex], 1, 1, outputFile);
@@ -344,7 +344,7 @@ int main(int argc, char * argv[])
             //printIEEEdouble(output);
 
             // write the bytes of output to the output file in the correct order
-            for (int byteIndex = sizeof(output) - 1; byteIndex >= 0; byteIndex --)
+            for (int byteIndex = 0; byteIndex < sizeof(output); byteIndex++)
             {
                 // i <3 pointers
                 fwrite(&((uint8_t*)&output)[byteIndex], 1, 1, outputFile);
@@ -449,7 +449,7 @@ int main(int argc, char * argv[])
             //printIEEEsingle(output);
 
             // write the bytes of output to the output file in the correct order
-            for (int byteIndex = sizeof(output) - 1; byteIndex >= 0; byteIndex --)
+            for (int byteIndex = 0; byteIndex < sizeof(output); byteIndex++)
             {
                 // i <3 pointers
                 fwrite(&((uint8_t*)&output)[byteIndex], 1, 1, outputFile);
