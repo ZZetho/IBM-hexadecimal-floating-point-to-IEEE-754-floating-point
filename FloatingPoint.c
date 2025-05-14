@@ -111,26 +111,16 @@ int main(int argc, char * argv[])
     if (inputPrecision == DOUBLE && outputPrecision == DOUBLE)
     {
         // double to double
-        uint8_t inputBufferLittle[8];
+        uint8_t inputBuffer[8];
         // read eight bytes into the buffer
-        while (fread(inputBufferLittle, sizeof(uint8_t) * 8, 1, inputFile) == 1)
+        while (fread(inputBuffer, sizeof(uint8_t) * 8, 1, inputFile) == 1)
         {
-			uint8_t inputBufferBig[8];
-			inputBufferBig[0] = inputBufferLittle[7];
-			inputBufferBig[1] = inputBufferLittle[6];
-			inputBufferBig[2] = inputBufferLittle[5];
-			inputBufferBig[3] = inputBufferLittle[4];
-			inputBufferBig[4] = inputBufferLittle[3];
-			inputBufferBig[5] = inputBufferLittle[2];
-			inputBufferBig[6] = inputBufferLittle[1];
-			inputBufferBig[7] = inputBufferLittle[0];
-			
             // 1 bit
-            uint8_t sign = (inputBufferBig[0] & 0x80) >> 7;
+            uint8_t sign = (inputBuffer[0] & 0x80) >> 7;
             // 7 bits
-            uint16_t IBMexponent = (inputBufferBig[0] & 0x7F);
+            uint16_t IBMexponent = (inputBuffer[0] & 0x7F);
             // 56 bits
-            uint64_t fraction = ((uint64_t)inputBufferBig[1] << 48) | ((uint64_t)inputBufferBig[2] << 40) | (uint64_t)inputBufferBig[3] << 32 | (uint64_t)inputBufferBig[4] << 24 | (uint64_t)inputBufferBig[5] << 16 | (uint64_t)inputBufferBig[6] << 8 | (uint64_t)inputBufferBig[7];
+            uint64_t fraction = ((uint64_t)inputBuffer[1] << 48) | ((uint64_t)inputBuffer[2] << 40) | (uint64_t)inputBuffer[3] << 32 | (uint64_t)inputBuffer[4] << 24 | (uint64_t)inputBuffer[5] << 16 | (uint64_t)inputBuffer[6] << 8 | (uint64_t)inputBuffer[7];
 
             //printf("fraction: %llx\n", fraction);
             //printf("exponent: %d\n", IBMexponent);
@@ -201,27 +191,18 @@ int main(int argc, char * argv[])
     else if (inputPrecision == DOUBLE && outputPrecision == SINGLE)
     {
         // double to single
-        uint8_t inputBufferLittle[8];
+        uint8_t inputBuffer[8];
         // read eight bytes into the buffer
-        while (fread(inputBufferLittle, sizeof(uint8_t) * 8, 1, inputFile) == 1)
+        while (fread(inputBuffer, sizeof(uint8_t) * 8, 1, inputFile) == 1)
         {
-			uint8_t inputBufferBig[8];
-			inputBufferBig[0] = inputBufferLittle[7];
-			inputBufferBig[1] = inputBufferLittle[6];
-			inputBufferBig[2] = inputBufferLittle[5];
-			inputBufferBig[3] = inputBufferLittle[4];
-			inputBufferBig[4] = inputBufferLittle[3];
-			inputBufferBig[5] = inputBufferLittle[2];
-			inputBufferBig[6] = inputBufferLittle[1];
-			inputBufferBig[7] = inputBufferLittle[0];
 			
-            uint8_t sign = (inputBufferBig[0] & 0x80) >> 7;
-            uint16_t IBMexponent = (inputBufferBig[0] & 0x7F);
-            uint64_t fraction = ((uint64_t)inputBufferBig[1] << 48) | ((uint64_t)inputBufferBig[2] << 40) | (uint64_t)inputBufferBig[3] << 32 | (uint64_t)inputBufferBig[4] << 24 | (uint64_t)inputBufferBig[5] << 16 | (uint64_t)inputBufferBig[6] << 8 | (uint64_t)inputBufferBig[7];
+            uint8_t sign = (inputBuffer[0] & 0x80) >> 7;
+            uint16_t IBMexponent = (inputBuffer[0] & 0x7F);
+            uint64_t fraction = ((uint64_t)inputBuffer[1] << 48) | ((uint64_t)inputBuffer[2] << 40) | (uint64_t)inputBuffer[3] << 32 | (uint64_t)inputBuffer[4] << 24 | (uint64_t)inputBuffer[5] << 16 | (uint64_t)inputBuffer[6] << 8 | (uint64_t)inputBuffer[7];
 
-//            printf("fraction: %llx\n", fraction);
-//            printf("exponent: %d\n", IBMexponent);
-//            printf("sign: %x\n", sign);
+			//printf("fraction: %llx\n", fraction);
+			//printf("exponent: %d\n", IBMexponent);
+			//printf("sign: %x\n", sign);
 
             // find the index of the first 1 in the fraction
             uint16_t oneIndex;
@@ -297,19 +278,13 @@ int main(int argc, char * argv[])
     else if (inputPrecision == SINGLE && outputPrecision == DOUBLE)
     {
         // single to double
-        uint8_t inputBufferLittle[4];
+        uint8_t inputBuffer[4];
         // read four bytes into the buffer
-        while (fread(inputBufferLittle, sizeof(uint8_t) * 4, 1, inputFile) == 1)
+        while (fread(inputBuffer, sizeof(uint8_t) * 4, 1, inputFile) == 1)
         {
-			uint8_t inputBufferBig[4];
-			inputBufferBig[0] = inputBufferLittle[3];
-			inputBufferBig[1] = inputBufferLittle[2];
-			inputBufferBig[2] = inputBufferLittle[1];
-			inputBufferBig[3] = inputBufferLittle[0];
-			
-            uint8_t sign = (inputBufferBig[0] & 0x80) >> 7;
-            uint8_t IBMexponent = (inputBufferBig[0] & 0x7F);
-            uint32_t fraction = (inputBufferBig[1] << 16) | (inputBufferBig[2] << 8) | inputBufferBig[3];
+            uint8_t sign = (inputBuffer[0] & 0x80) >> 7;
+            uint8_t IBMexponent = (inputBuffer[0] & 0x7F);
+            uint32_t fraction = (inputBuffer[1] << 16) | (inputBuffer[2] << 8) | inputBuffer[3];
 
             //printf("fraction: %x\n", fraction);
             //printf("exponent: %d\n", exponent);
@@ -379,22 +354,16 @@ int main(int argc, char * argv[])
     else if (inputPrecision == SINGLE && outputPrecision == SINGLE)
     {
         // single to single
-        uint8_t inputBufferLittle[4];
+        uint8_t inputBuffer[4];
         // read four bytes into the buffer
-        while (fread(inputBufferLittle, sizeof(uint8_t) * 4, 1, inputFile) == 1)
-        {
-			uint8_t inputBufferBig[4];
-			inputBufferBig[0] = inputBufferLittle[3];
-			inputBufferBig[1] = inputBufferLittle[2];
-			inputBufferBig[2] = inputBufferLittle[1];
-			inputBufferBig[3] = inputBufferLittle[0];
-			
+        while (fread(inputBuffer, sizeof(uint8_t) * 4, 1, inputFile) == 1)
+        {			
             // 1 bit
-            uint8_t sign = (inputBufferBig[0] & 0x80) >> 7;
+            uint8_t sign = (inputBuffer[0] & 0x80) >> 7;
             // 7 bits
-            uint8_t IBMexponent = (inputBufferBig[0] & 0x7F);
+            uint8_t IBMexponent = (inputBuffer[0] & 0x7F);
             // 24 bits
-            uint32_t fraction = (inputBufferBig[1] << 16) | (inputBufferBig[2] << 8) | inputBufferBig[3];
+            uint32_t fraction = (inputBuffer[1] << 16) | (inputBuffer[2] << 8) | inputBuffer[3];
 
             //printf("fraction: %x\n", fraction);
             //printf("exponent: %d\n", exponent);
