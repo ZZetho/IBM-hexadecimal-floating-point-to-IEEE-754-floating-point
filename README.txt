@@ -14,3 +14,7 @@ Test cases (IBM singles => IEEE singles):
 00100001010000000000000000000000 (smallest normal IEEE single)
 00100001001111111111111111111111 (largest denormalised IEEE single (technically not quite but its as close as i can get))
 00011011100000000000000000000000 (smallest denormalised IEEE single)
+
+License:
+	CC BY-NC-SA 4.0
+	https://creativecommons.org/licenses/by-nc-sa/4.0/
