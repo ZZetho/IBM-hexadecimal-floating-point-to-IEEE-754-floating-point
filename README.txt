@@ -1,4 +1,6 @@
-Converts between IBM hexadecimal floating point numbers and IEEE 754 floating point numbers
+Converts from the IBM hexadecimal floating point format to the IEEE 754 floating point format, with the option to convert between singles and doubles.
+Numbers too small to be represented are turned into zeros.
+Numbers too big to be represented are turned into infinities.
 
 Instructions:
 	1. Compile the program with: gcc FloatingPoint.c -o FloatingPoint
