@@ -1,4 +1,4 @@
-Converts between IBM hexidecimal floating point numbers and IEEE 754 floating point numbers
+Converts between IBM hexadecimal floating point numbers and IEEE 754 floating point numbers
 
 Instructions:
 	1. Compile the program with: gcc FloatingPoint.c -o FloatingPoint
