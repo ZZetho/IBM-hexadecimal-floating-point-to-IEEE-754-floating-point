@@ -1,6 +1,4 @@
-Etude 12, Floating Point
-
-By: Liam Williamson, Jessica Fan, Maiek Anantawat, Yuxing zhang
+Converts between IBM hexidecimal floating point numbers and IEEE 754 floating point numbers
 
 Instructions:
 	1. Compile the program with: gcc FloatingPoint.c -o FloatingPoint
